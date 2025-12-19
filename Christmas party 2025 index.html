@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHIORI×AI Christmas Party</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Shippori+Mincho:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* =========================================
+           カラーパレット定義
+           ========================================= */
+        :root {
+            --main-bg: #0f1c2e;
+            --text-color: #fcf9f2;
+            --classic-red: #960018;
+            --classic-green: #004d33;
+            --classic-gold: #d4af37;
+            
+            --font-jp: "Shippori Mincho", "Hiragino Mincho ProN", serif;
+            --font-en: "Cinzel", serif;
+        }
+
+        /* 雪が降るアニメーション */
+        @keyframes snowfall-bg {
+            0% { background-position: 0 0, 50px 0; }
+            100% { background-position: 0 500px, 50px 500px; }
+        }
+
+        /* 基本スタイル設定 */
+        body {
+            font-family: var(--font-jp);
+            line-height: 1.8;
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            background-color: var(--main-bg);
+            text-align: center;
+            background-image: 
+                radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+                radial-gradient(rgba(255,255,255,0.05) 1.5px, transparent 1.5px);
+            background-size: 100px 100px, 150px 150px;
+            animation: snowfall-bg 30s linear infinite;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* ▼▼▼ アニメーション定義 ▼▼▼ */
+        
+        /* 1. テキスト用：下からふわっと */
+        .reveal-item {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 1.5s cubic-bezier(0.2, 0.8, 0.2, 1), transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            display: block;
+        }
+        .reveal-item.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 2. 画像用A：ゴールドのカーテン（左→右） */
+        .reveal-curtain {
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+        .reveal-curtain.is-visible { opacity: 1; }
+
+        .reveal-curtain::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--classic-gold);
+            transform: translateX(-100%);
+            z-index: 2;
+        }
+        .reveal-curtain.is-visible::after {
+            animation: curtain-swipe-ltr 1.2s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+        }
+        @keyframes curtain-swipe-ltr {
+            0% { transform: translateX(-100%); }
+            45% { transform: translateX(0); }
+            55% { transform: translateX(0); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .reveal-curtain img {
+            opacity: 0;
+            transform: scale(1.1);
+            transition: transform 1.5s ease-out;
+        }
+        .reveal-curtain.is-visible img {
+            animation: image-appear 0.1s 0.6s forwards;
+            transform: scale(1);
+        }
+
+        /* 3. 画像用B：ゴールドのカーテン（右→左） */
+        .reveal-curtain-rtl {
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+        .reveal-curtain-rtl.is-visible { opacity: 1; }
+
+        .reveal-curtain-rtl::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--classic-gold);
+            transform: translateX(100%); /* 右に待機 */
+            z-index: 2;
+        }
+        .reveal-curtain-rtl.is-visible::after {
+            animation: curtain-swipe-rtl 1.2s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+        }
+        @keyframes curtain-swipe-rtl {
+            0% { transform: translateX(100%); }
+            45% { transform: translateX(0); }
+            55% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+        
+        .reveal-curtain-rtl img {
+            opacity: 0;
+            transform: scale(1.1);
+            transition: transform 1.5s ease-out;
+        }
+        .reveal-curtain-rtl.is-visible img {
+            animation: image-appear 0.1s 0.6s forwards;
+            transform: scale(1);
+        }
+
+        @keyframes image-appear { to { opacity: 1; } }
+
+
+        /* 4. メンバー画像用：マジカル・フリップ演出 */
+        .member-photo-frame {
+            position: relative;
+            perspective: 1000px;
+            opacity: 0;
+            margin-bottom: 30px;
+        }
+        
+        .member-photo-frame.is-visible {
+            opacity: 1;
+            transition: opacity 0.5s;
+        }
+
+        .member-photo-frame img {
+            transform: rotateY(90deg) scale(0.8);
+            opacity: 0;
+            border-radius: 2px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .member-photo-frame.is-visible img {
+            transform: rotateY(0deg) scale(1);
+            opacity: 1;
+        }
+
+        .member-photo-frame::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.6), transparent);
+            transform: skewX(-25deg);
+            z-index: 2;
+            opacity: 0;
+        }
+
+        .member-photo-frame.is-visible::after {
+            animation: shine-move 1s ease-out 0.8s forwards; 
+        }
+
+        @keyframes shine-move {
+            0% { left: -100%; opacity: 0; }
+            50% { opacity: 1; }
+            100% { left: 200%; opacity: 0; }
+        }
+
+        /* ▲▲▲ 設定ここまで ▲▲▲ */
+
+        /* セクション共通設定 */
+        section {
+            width: 100%;
+            padding: 40px 20px 80px 20px;
+            box-sizing: border-box;
+            position: relative;
+            background-color: var(--main-bg);
+            color: var(--text-color);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        section > * {
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        section > img {
+            max-width: 900px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        /* 見出しスタイル */
+        h2 {
+            font-family: var(--font-en);
+            font-size: 36px;
+            font-weight: 400;
+            margin-bottom: 20px;
+            display: inline-block;
+            position: relative;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--classic-gold);
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+        
+        h2::before, h2::after {
+            content: "";
+            display: block;
+            width: 60px;
+            height: 2px;
+            margin: 10px auto;
+            opacity: 0.8;
+        }
+
+        /* 見出し装飾 */
+        #section-message h2::before, #section-message h2::after,
+        #section-lounge h2::before, #section-lounge h2::after,
+        #section-member h2::before, #section-member h2::after {
+            background-color: var(--classic-red);
+            box-shadow: 0 0 5px rgba(150, 0, 24, 0.5);
+        }
+
+        #section-hilton h2::before, #section-hilton h2::after,
+        #section-menu h2::before, #section-menu h2::after,
+        #section-access h2::before, #section-access h2::after,
+        #section-request h2::before, #section-request h2::after {
+            background-color: var(--classic-green);
+            box-shadow: 0 0 5px rgba(0, 77, 51, 0.5);
+        }
+
+        /* 本文 */
+        p {
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+            font-size: 16px;
+            font-weight: 400;
+            letter-spacing: 0.05em;
+        }
+
+        /* フル幅バナー */
+        .middle-banner-container {
+            width: 100%;
+            margin: 0; 
+            line-height: 0;
+            position: relative;
+            z-index: 5;
+            border-top: 2px solid var(--classic-gold);
+            border-bottom: 2px solid var(--classic-gold);
+            overflow: hidden; 
+        }
+        .middle-banner-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            filter: brightness(0.8) contrast(1.2);
+        }
+
+        /* メンバー紹介 */
+        .member-profile {
+            margin-bottom: 50px;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: rgba(15, 28, 46, 0.8);
+            padding: 40px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .member-header {
+            margin-bottom: 20px;
+            width: 100%;
+            text-align: center;
+        }
+        .member-header h3 {
+            font-size: 26px;
+            font-family: var(--font-en);
+            margin: 0 auto 10px auto;
+            color: var(--classic-gold);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            border-bottom: 1px solid var(--classic-gold);
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+        .member-title {
+            font-size: 14px;
+            color: rgba(212, 175, 55, 0.8);
+            display: block;
+            font-family: var(--font-jp);
+            letter-spacing: 0.1em;
+        }
+
+        .member-profile img {
+            border-radius: 2px;
+            width: 80%; 
+            max-width: 240px;
+            height: auto;
+            object-fit: cover; 
+            margin-bottom: 30px;
+            border: none;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        }
+
+        .member-detail {
+            width: 100%;
+            color: var(--text-color);
+            font-size: 15px;
+            line-height: 2.0;
+            text-align: left;
+        }
+
+        /* PC向けレイアウト */
+        @media screen and (min-width: 768px) {
+            .member-profile {
+                display: grid;
+                grid-template-columns: 240px 1fr;
+                gap: 40px;
+                align-items: start;
+                text-align: left;
+                padding: 50px;
+            }
+            .member-profile img {
+                grid-column: 1;
+                grid-row: 1 / 3;
+                width: 100%;
+                max-width: 100%;
+                margin-bottom: 0;
+            }
+            .member-header {
+                grid-column: 2;
+                grid-row: 1;
+                text-align: center;
+                margin-bottom: 0;
+            }
+            .member-detail {
+                grid-column: 2;
+                grid-row: 2;
+            }
+            .member-profile.member-profile-reverse {
+                grid-template-columns: 1fr 240px;
+            }
+            .member-profile.member-profile-reverse img {
+                grid-column: 2;
+                grid-row: 1 / 3;
+            }
+            .member-profile.member-profile-reverse .member-header {
+                grid-column: 1;
+                grid-row: 1;
+                text-align: center;
+            }
+            .member-profile.member-profile-reverse .member-detail {
+                grid-column: 1;
+                grid-row: 2;
+            }
+        }
+
+        /* Google Maps */
+        .map-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .map-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            filter: grayscale(0.3) contrast(1.1);
+        }
+
+        /* フッターナビ */
+        .footer-nav {
+            padding: 60px 20px;
+            background-color: #0a121e;
+            border-top: 2px solid var(--classic-gold);
+        }
+        .footer-nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .footer-nav li {
+            margin: 10px 20px;
+        }
+        .footer-nav a {
+            text-decoration: none;
+            color: var(--classic-gold);
+            font-size: 14px;
+            font-family: var(--font-en);
+            letter-spacing: 0.1em;
+            transition: all 0.3s;
+        }
+        .footer-nav a:hover {
+            color: var(--classic-red);
+            text-shadow: 0 0 5px rgba(150, 0, 24, 0.5);
+        }
+
+        footer {
+            padding: 30px;
+            background-color: #05090f;
+            color: rgba(212, 175, 55, 0.5);
+            font-size: 11px;
+            font-family: var(--font-en);
+            letter-spacing: 0.1em;
+        }
+
+        /* TOPバナー設定 */
+        .top-banner-container {
+            position: relative;
+            width: 100%;
+            height: 60vh; 
+            min-height: 400px;
+            background-color: #000;
+            overflow: hidden;
+            border-bottom: 4px solid var(--classic-gold);
+        }
+        .banner-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.6) contrast(1.2);
+            animation: zoom-out-bg 10s ease-out forwards;
+        }
+        @keyframes zoom-out-bg {
+            0% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .banner-text-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #ffffff;
+            width: 90%;
+            z-index: 10;
+        }
+        
+        @keyframes cinema-blur-in {
+            0% { opacity: 0; filter: blur(20px); transform: scale(1.1); }
+            100% { opacity: 1; filter: blur(0); transform: scale(1); }
+        }
+
+        .banner-main-title {
+            font-family: var(--font-en);
+            font-size: 48px;
+            margin: 0;
+            line-height: 1.2;
+            color: #fff;
+            border-top: 2px solid var(--classic-red);
+            border-bottom: 2px solid var(--classic-green);
+            padding: 20px 0;
+            display: inline-block;
+            text-shadow: 0 5px 15px rgba(0,0,0,0.8);
+            
+            animation: cinema-blur-in 2.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            opacity: 0;
+        }
+        
+        .banner-sub-title {
+            font-family: var(--font-en);
+            font-size: 24px;
+            display: block;
+            margin-bottom: 15px;
+            color: var(--classic-gold);
+            letter-spacing: 0.2em;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.8);
+            
+            animation: cinema-blur-in 2.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            opacity: 0;
+        }
+
+        @media screen and (min-width: 768px) {
+            .banner-sub-title { font-size: 32px; }
+            .banner-main-title { font-size: 72px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <header class="top-banner-container">
+        <img src="Top_banner.png" alt="Top Banner" class="banner-image">
+
+        <div class="banner-text-overlay">
+            <span class="banner-sub-title">Shiori & Ai</span>
+            <h1 class="banner-main-title">Christmas Party</h1>
+        </div>
+    </header>
+
+    <section id="section-message" class="animate-trigger">
+        <h2>Message</h2>
+        <p>小さい頃、多分、中学生くらいまで
+おじいちゃんとおばあちゃんに
+ヒルトンのクリスマスビュッフェに
+連れて行ってもらっていて、
+いつか素敵な人と
+一緒に行きたいなと思ってました。
+
+ということで
+2025年のクリスマスは
+ヒルトン東京でデートしよう！</p>
+    </section>
+
+    <section id="section-hilton" class="animate-trigger">
+        <h2>Location</h2>
+        <p>日本有数のエンタメ街、ショッピング街である
+新宿の中心に建つ高層ホテル。
+らせん階段が特徴的な「マーブルラウンジ」で
+豊かな食事をご用意しております。
+
+<span style="font-size:13px; color:#fff;">※ちなみに全然泊まらない</span></p>
+    </section>
+
+    <section id="section-lounge" class="animate-trigger">
+        <h2>Lounge</h2>
+        <p>季節の旬な食材を新鮮かつ質の良い状態で
+ご提供しております。
+インターナショナルホテルならではの
+国際色豊かで、バラエティ溢れるお料理が
+ビュッフェ台に並びます。</p>
+    </section>
+    
+    <div class="middle-banner-container reveal-curtain" id="banner-buffet">
+        <img src="ビュッフェ.png" alt="ビュッフェイメージ" class="middle-banner-image">
+    </div>
+
+    <section id="section-menu" class="animate-trigger">
+        <h2>Menu</h2>
+        <p>ビュッフェ食べ放題！特にスイーツが多いかも
+ピスタチオクリームツリータルトとか美味そう
+でも今の気分はロブスター
+カップ麺からロブスター
+変わらず追われる身 (yeah)
+少年Aから superstar
+次に億万長者次なるラッパー誰
+もちろんそれは俺 (Pablow)
+もちろんそれは俺 (ey)
+Ninja 轢くラジコン
+任天堂ファミコン
+俺の街ではすぐに剥がれ錆びて腐るパチモン
+川崎区で有名になりたきゃ
+人殺すかラッパーになるかだ
+アル・パチーノじゃなくてアル・カポネ
+役づくりじゃなくてこれは生き様
+I'm a trouble man</p>
+    </section>
+    
+    <div class="middle-banner-container reveal-curtain-rtl" id="banner-party">
+        <img src="Badhop_party.png" alt="Party Image" class="middle-banner-image">
+    </div>
+
+    <section id="section-member">
+        <div class="animate-trigger">
+            <h2 style="margin-bottom: 10px;">Member</h2>
+            <p style="color:var(--classic-gold); margin-bottom:10px; font-weight:500;">BADHOP以外のメンバー紹介</p>
+        </div>
+
+        <div class="member-profile animate-trigger">
+            <div class="member-header">
+                <h3>姫 Princess</h3>
+                <span class="member-title">広告代理店でせかせか働いている25歳</span>
+            </div>
+            
+            <div class="member-photo-frame">
+                <img src="member_shiori.png" alt="姫 Princess">
+            </div>
+            
+            <div class="member-detail">
+                <p>・魅力
+　明るめ（髪も）で可愛い（顔が）
+
+・口癖
+　お腹すいたかも / まあいいか
+
+・親友
+　チャッピー/草津行くぞー！等
+
+・好きな食べ物
+　焼肉/オムライス/ハンバーグ/家系</p>
+            </div>
+        </div>
+
+        <div class="member-profile member-profile-reverse animate-trigger">
+            <div class="member-header">
+                <h3>王 Prince</h3>
+                <span class="member-title">髪型が8年間変わらない25歳<br>（もうそろそろ26歳）</span>
+            </div>
+
+            <div class="member-photo-frame">
+                <img src="member_AI.jpg" alt="王 Prince">
+            </div>
+            
+            <div class="member-detail">
+                <p>・特技
+　じゃんけん（最近はvsカニ専）/夏
+
+・苦手なこと
+　小銭の管理/施錠/裁縫/みじん切り
+
+・好きな単語
+　ハッピーアワー/歩行者天国/
+　ハットトリック
+
+・派閥
+　米＞パン、足>手、ANA>JAL</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="section-access" class="animate-trigger">
+        <h2>Access</h2>
+        <p>川崎south sideじゃなくてヒルトンへの行き方
+一緒に行く場合は確認する必要無し！
+
+所在地：東京都新宿区西新宿6-6-2
+
+別々に行く場合は19:45に
+1F受付ロビーっぽいところで待ち合わせ。
+分からなかったらCall me baby⤴
+
+ぜってーに遅刻すんなよ♡</p>
+
+        <div class="map-container">
+            <iframe src="https://maps.google.com/maps?q=35.6933,139.6918&hl=ja&z=16&output=embed" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+    </section>
+
+    <section id="section-request" class="animate-trigger">
+        <h2>Request</h2>
+        <p>いつも通り可愛い格好で来てね。
+
+たくさん飲んでたくさん食べて、
+腹パンになろう！
+
+Merry Xmas.</p>
+    </section>
+
+    <div class="footer-nav">
+        <ul>
+            <li><a href="#section-message">Message</a></li>
+            <li><a href="#section-hilton">Hilton</a></li>
+            <li><a href="#section-lounge">Lounge</a></li>
+            <li><a href="#section-menu">Menu</a></li>
+            <li><a href="#section-member">Member</a></li>
+            <li><a href="#section-access">Access</a></li>
+            <li><a href="#section-request">Request</a></li>
+        </ul>
+    </div>
+
+    <footer>
+        Copyright 2025 ai.yoshino@hakuhodo.co.jp
+    </footer>
+
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        
+        // 1. テキスト要素の監視（時間差フェードイン）
+        const textTriggers = document.querySelectorAll('.animate-trigger');
+        const textObserverOptions = {
+            root: null,
+            rootMargin: '0px 0px -50px 0px',
+            threshold: 0.1
+        };
+        const textObserver = new IntersectionObserver((entries, obs) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const section = entry.target;
+                    
+                    // テキスト系
+                    const items = section.querySelectorAll('.reveal-item');
+                    items.forEach((item, index) => {
+                        setTimeout(() => {
+                            item.classList.add('is-visible');
+                        }, index * 400);
+                    });
+
+                    // メンバー画像（マジカルフリップ）
+                    const photoFrames = section.querySelectorAll('.member-photo-frame');
+                    photoFrames.forEach((frame, index) => {
+                        setTimeout(() => {
+                            frame.classList.add('is-visible');
+                        }, index * 600 + 400); 
+                    });
+
+                    obs.unobserve(section);
+                }
+            });
+        }, textObserverOptions);
+
+        textTriggers.forEach(section => {
+            const elements = section.querySelectorAll('h2, h3, .member-header, .map-container');
+            elements.forEach(el => el.classList.add('reveal-item'));
+
+            const paragraphs = section.querySelectorAll('p');
+            paragraphs.forEach(p => {
+                const content = p.innerHTML.trim();
+                if (content.includes('\n') || content.includes('<br>')) {
+                    const lines = content.split(/\n|<br\s*\/?>/i);
+                    p.innerHTML = '';
+                    p.style.marginBottom = '0';
+                    lines.forEach(line => {
+                        const cleanLine = line.trim();
+                        if (cleanLine.length > 0) {
+                            const div = document.createElement('div');
+                            div.classList.add('reveal-item');
+                            div.innerHTML = cleanLine;
+                            div.style.marginBottom = '10px';
+                            p.appendChild(div);
+                        }
+                    });
+                } else {
+                    p.classList.add('reveal-item');
+                }
+            });
+            textObserver.observe(section);
+        });
+
+
+        // 2. 画像のカーテン演出
+        const curtainElements = document.querySelectorAll('.reveal-curtain, .reveal-curtain-rtl');
+        
+        const imageObserverOptions = {
+            root: null,
+            rootMargin: '0px 0px -100px 0px', 
+            threshold: 0.1
+        };
+
+        const imageObserver = new IntersectionObserver((entries, obs) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    obs.unobserve(entry.target);
+                }
+            });
+        }, imageObserverOptions);
+
+        curtainElements.forEach(el => {
+            imageObserver.observe(el);
+        });
+
+    });
+</script>
+
+</body>
+</html>
